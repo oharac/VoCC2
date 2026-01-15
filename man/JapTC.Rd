@@ -4,9 +4,11 @@
 \name{JapTC}
 \alias{JapTC}
 \title{Multivariate Terraclimate data for Japan}
-\format{A raster stack with 9 layers for the historical (1960-1969) and current (2008-2017)
+\format{
+A raster stack with 9 layers for the historical (1960-1969) and current (2008-2017)
 average (AnMn) and standard deviation (AnMnSD) of the mean annual (AnMn) precipitation (Ppr),
-maximum (Tmax) and minimum (Tmin) temperature.}
+maximum (Tmax) and minimum (Tmin) temperature.
+}
 \source{
 \href{http://www.climatologylab.org/terraclimate.html}{Terraclimate} data set.
 }

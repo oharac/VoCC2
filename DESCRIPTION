@@ -1,4 +1,4 @@
-Package: VoCC
+Package: VoCC2
 Title: The Velocity of Climate Change and related climatic metrics
 Date: 2019-07-18
 Version: 1.0.0
@@ -25,6 +25,7 @@ Imports: CircStats,
     parallel,
     RColorBrewer,
     sp,
+    terra,
     stats,
     xts
 Suggests: ggplot2,
@@ -42,6 +43,6 @@ BugReports: https://github.com/JorGarMol/VoCC/issues
 License: AGPL (>= 3) LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr,
     rmarkdown

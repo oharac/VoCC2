@@ -40,6 +40,17 @@ a1
 # Using the area field from the polygon data table
 a2 <- resTime(EEZ, vel, areapg = as.numeric(as.numeric(levels(EEZ$Area_km2))[EEZ$Area_km2]))
 a2
+# Using a user defined polygon
+x_coord <- c(-28, -20, -20.3, -25.5)
+y_coord <- c(60, 61, 63, 62)
+p <- Polygon(cbind(x_coord, y_coord))
+sps <- SpatialPolygons(list(Polygons(list(p),1)))
+a3 <- resTime(sps, vel, areapg = NA)
+
+plot(vel)
+plot(EEZ, add = TRUE)
+plot(sps, add = TRUE)
+
 }
 \references{
 \href{https://www.nature.com/articles/nature08649}{Loarie et al. 2009}. The velocity of climate change. Nature, 462, 1052-1055.
