@@ -27,6 +27,7 @@ Imports: CircStats,
     sp,
     terra,
     stats,
+    stringr,
     xts
 Suggests: ggplot2,
     gridExtra,
