@@ -75,11 +75,12 @@
 #'
 #' @rdname dVoCC
 
-dVoCC <- function(clim, n, tdiff, method = "Single", climTol, geoTol, distfun = "GreatCircle", trans = NA, lonlat = TRUE){
+dVoCC <- function(clim, n, tdiff, method = "Single",
+                  climTol, geoTol, distfun = "GreatCircle",
+                  trans = NA, lonlat = TRUE, ncores = NULL) {
 
 if(distfun == "Euclidean" & lonlat == TRUE){
-print("Error: Euclidean distances specified for unprojected coordinates")
-stop()
+  stop("Error: Euclidean distances specified for unprojected coordinates")
 }
 
 dat <- na.omit(data.table(clim))
@@ -88,7 +89,18 @@ fut <- dat[, seq(2, (2*n), by = 2), with=FALSE]
 
 # set things up for parallel processing
 cores = detectCores()
-ncores = cores[1]-1
+if(!is.null(ncores)) {
+  if(ncores > cores) {
+    ncores_update <- min(cores[1] / 2, 64)
+    message(ncores, ' cores requested; ', cores, ' cores available; setting ncores to ',
+            ncores_update, ' cores.')
+    ncores <- ncores_update
+  }
+}
+if(is.null(ncores)) {
+  ncores <- min(cores[1] / 2, 64)
+}
+
 cuts <- cut(1:nrow(dat), ncores, labels = FALSE)
 cl <- makeCluster(ncores)
 registerDoParallel(cl)
