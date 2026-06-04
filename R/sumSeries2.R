@@ -62,34 +62,58 @@
 #' fun = myf, freqin = "months", freqout = "other")
 #'
 #' @rdname sumSeries
+#'
 
-sumSeries <- function(r, p, yr0, l = nlayers(r), fun = function(x) colMeans(x, na.rm = TRUE), freqin = "months", freqout = "years"){
-  # construct xts object
-  m <- t(getValues(r))
-  dates <- seq(as.Date(yr0), length = l, by = freqin)
-  ts1 <- xts(m, order.by = dates)
-  # subset for the period of interest
-  x <- ts1[p]
+sumSeries2 <- function(r,           ### SpatRast object
+                       p    = NULL, ### auto extract from yyyy-mm-dd format
+                       yr0  = NULL, ### auto extract
+                       l    = NULL, ### auto detect
+                       fun = function(x) colMeans(x, na.rm = TRUE),
+                       freqin = c('weeks', 'months', 'quarters', 'years', 'other')[2], ### default months
+                       freqout = "years") {
+  ### get layer names for possible date detection
+  layer_names <- names(r)
+  if(is.null(l)) l <- nlyr(r)
+  if(is.null(p)) {
+    message('No period provided; extracting from layer names expecting yyyy-mm-dd')
+    name_dates <- stringr::str_extract(layer_names, '[0-9]{4}.[0-9]{2}.[0-9]{2}') %>%
+      stringr::str_replace_all('[^0-9]', '-')
+    if(length(name_dates) == 0) stop('No dates detected! Expecting format yyyy-mm-dd')
+    if(length(name_dates) != l) stop('Extracted dates n = ', length(name_dates), ' but layers n = ', l)
+    name_dates <- as.Date(name_dates)
+    period <- paste(name_dates[1], name_dates[length(name_dates)], sep = '/')
+  } else {
+    period <- p
+  }
 
-  # calculate the annual series
-  if(freqout == "weeks")    s <- apply.weekly(x, fun)
-  if(freqout == "months")   s <- apply.monthly(x, fun)
-  if(freqout == "quarters") s <- apply.quarterly(x, fun)    # Jan-Mar (Q1); Apr-Jn (Q2); Jl-Sep(Q3); Oct-Dec (Q4)
-  if(freqout == "years")    s <- apply.yearly(x, fun)
-  if(freqout == "other")    s <- fun(x)
+  ### construct xts object
+  r_mtx <- t(values(r))  ### pretty slow
+  if(is.null(p)) {
+    dates <- as.Date(name_dates)
+  } else dates <- seq(as.Date(yr0), length = l, by = freqin)
 
-  # create raster stack
+  ts1 <- xts::xts(r_mtx, order.by = dates)
+
+  ### subset for the period of interest using xts indexing
+  ts1_sub <- ts1[period]
+
+  ### calculate the annual series using apply.X functions from xts
+  if(freqout == "weeks")    s <- apply.weekly(ts1_sub, fun)
+  if(freqout == "months")   s <- apply.monthly(ts1_sub, fun)
+  if(freqout == "quarters") s <- apply.quarterly(ts1_sub, fun)  ### Jan-Mar (Q1); Apr-Jn (Q2); Jl-Sep(Q3); Oct-Dec (Q4)
+  if(freqout == "years")    s <- apply.yearly(ts1_sub, fun)
+  if(freqout == "other")    s <- fun(ts1_sub)
+
+  ### create raster stack
   r1 <- stack()
-  for(i in 1:nrow(s)) {
+  for(i in 1:nrow(s)){
     r2 <- raster(r[[1]])
-    r2[] <-  as.numeric(s[i, ])
+    r2[] <-  as.numeric(s[i,])
     r1 <- addLayer(r1, r2)
   }
   if(freqout != "other") {
-    names(r1) <- seq(start(x), length = nlayers(r1), by = freqout)
+    names(r1) <- seq(start(ts1_sub), length = nlayers(r1), by = freqout)
   }
   return(r1)
 }
-
-
 
